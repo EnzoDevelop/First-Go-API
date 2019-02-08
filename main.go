@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -29,13 +30,13 @@ var books []Book
 
 // Get All Books
 func getBooks(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("COntent-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(books)
 }
 
 // Get Single Book
 func getBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("COntent-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r) // Get params
 	// Loop through books and find with id
 	for _, item := range books {
@@ -44,12 +45,13 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	json.NewEncoder(w).Encode(&Book{})
+	w.WriteHeader(http.StatusNotFound)
+	io.WriteString(w, `{"error": "Book not found!"}`)
 }
 
 // Create a New Book
 func createBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("COntent-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	var book Book
 	_ = json.NewDecoder(r.Body).Decode(&book)
 	book.ID = strconv.Itoa(rand.Intn(10000000)) // Mock ID - not safe
@@ -59,7 +61,7 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 
 // Update a Book
 func updateBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("COntent-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	for index, item := range books {
 		if item.ID == params["id"] {
@@ -76,7 +78,7 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 
 // Delete a Book
 func deleteBook(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("COntent-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r) // Get params
 	for index, item := range books {
 		if item.ID == params["id"] {
